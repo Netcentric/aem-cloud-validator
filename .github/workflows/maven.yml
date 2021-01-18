@@ -1,4 +1,4 @@
-name: Java CI/CD
+name: maven-cicd
 
 on: [push, pull_request]
 
