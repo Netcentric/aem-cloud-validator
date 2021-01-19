@@ -9,6 +9,14 @@ Validates content packages for invalid usage patterns described in [Debugging AE
 
 *This validator only includes checks which are not yet covered by the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] so it is strongly recommended to also enable the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] in your build.*
 
+# Settings
+
+The following options are supported apart from the default settings mentioned in [FileVault validation][2].
+
+Option | Mandatory | Description
+--- | --- | ---
+allowVarNodeOutsideContainer | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. Default value `true`.
+
 # Included Checks
 
 ## Including `/var` in content package

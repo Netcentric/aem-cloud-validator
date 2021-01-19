@@ -19,13 +19,25 @@ import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @MetaInfServices
 public class AemCloudValidatorFactory implements ValidatorFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AemCloudValidatorFactory.class);
+
+    private static final String OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS = "allowVarNodeOutsideContainer";
+    
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
-        return new AemCloudValidator(context.getContainerValidationContext(), settings.getDefaultSeverity());
+        boolean allowVarNodesOutsideContainers = true;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS)) {
+            allowVarNodesOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS));
+        }
+        LOGGER.debug("netcentric-aem-cloud: Allow /var nodes outside containers: {}", allowVarNodesOutsideContainers);
+        return new AemCloudValidator(allowVarNodesOutsideContainers, context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override
