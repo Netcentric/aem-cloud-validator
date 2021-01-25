@@ -27,28 +27,33 @@ import org.jetbrains.annotations.Nullable;
 
 public class AemCloudValidator implements NodePathValidator {
 
-    static final String VIOLATION_MESSAGE_STRING = "Using nodes below /var is only allowed in author-specific packages. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package";
+    static final String VIOLATION_MESSAGE_STRING_VAR_NODES_CONDITION_CONTAINER = "only allowed in author-specific packages";
+    static final String VIOLATION_MESSAGE_STRING_VAR_NODES_CONDITION_OVERALL = "not allowed";
+    static final String VIOLATION_MESSAGE_STRING_VAR_NODES = "Using nodes below /var is %s. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%%2Fvar-in-content-package";
 
     private final @NotNull ValidationMessageSeverity defaultSeverity;
     private final ValidationContext containerValidationContext;
     private boolean foundViolation;
 
-    public AemCloudValidator(@Nullable ValidationContext containerValidationContext, @NotNull ValidationMessageSeverity defaultSeverity) {
+    private boolean allowVarNodesOutsideContainers;
+
+    public AemCloudValidator(boolean allowVarNodesOutsideContainers, @Nullable ValidationContext containerValidationContext, @NotNull ValidationMessageSeverity defaultSeverity) {
         super();
         this.containerValidationContext = containerValidationContext;
         this.defaultSeverity = defaultSeverity;
         this.foundViolation = false;
+        this.allowVarNodesOutsideContainers = allowVarNodesOutsideContainers;
     }
 
     @Override
     public Collection<ValidationMessage> validate(@NotNull String path) {
-        // only check if within a container
-        if (containerValidationContext != null && !foundViolation) {
+        if (!foundViolation && path.startsWith("/var/")) {
             // check if package itself is only used on author
-            if (path.startsWith("/var/") && !isContainedInAuthorOnlyPackage(containerValidationContext)) {
+            if (!allowVarNodesOutsideContainers || !isContainedInAuthorOnlyPackage(containerValidationContext)) {
                 // only emit once per package
                 foundViolation = true;
-                return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_STRING));
+                return Collections.singleton(new ValidationMessage(defaultSeverity, String.format(
+                        VIOLATION_MESSAGE_STRING_VAR_NODES, allowVarNodesOutsideContainers ? VIOLATION_MESSAGE_STRING_VAR_NODES_CONDITION_CONTAINER : VIOLATION_MESSAGE_STRING_VAR_NODES_CONDITION_OVERALL)));
             }
         }
         return null;
