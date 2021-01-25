@@ -284,6 +284,9 @@
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <!-- manually release in https://oss.sonatype.org/#stagingRepositories after the Maven release build -->
                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    <!-- workarounds to make releasing possible at times when ossrh is really slow -->
+                    <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
+                    <keepStagingRepositoryOnCloseRuleFailure>true</keepStagingRepositoryOnCloseRuleFailure>
                 </configuration>
             </plugin>
 
