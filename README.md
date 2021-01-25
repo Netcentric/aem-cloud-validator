@@ -13,9 +13,9 @@ Validates content packages for invalid usage patterns described in [Debugging AE
 
 The following options are supported apart from the default settings mentioned in [FileVault validation][2].
 
-Option | Mandatory | Description
---- | --- | ---
-allowVarNodeOutsideContainer | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. Default value `true`.
+Option | Mandatory | Description | Default Value
+--- | --- | --- | ---
+allowVarNodeOutsideContainer | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
 
 # Included Checks
 
@@ -32,6 +32,13 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
   <groupId>org.apache.jackrabbit</groupId>
   <artifactId>filevault-package-maven-plugin</artifactId>
   <version>1.1.0</version>
+  <configuration>
+    <validatorsSettings>
+      <netcentric-aem-cloud>
+        <allowVarNodeOutsideContainer>false</allowVarNodeOutsideContainer><!-- default value is true, as it is allowed to have /var nodes inside author-only container -->
+      </netcentric-aem-cloud>
+    </validatorsSettings>
+  </configuration>
   <dependencies>
     <dependency>
       <groupId>biz.netcentric.filevault.validator</groupId>
