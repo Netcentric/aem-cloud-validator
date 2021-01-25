@@ -23,6 +23,8 @@ allowVarNodeOutsideContainer | no | `true` in case `/var` nodes should be allowe
 
 Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
+As this restriction technically only affects publish instances it is sstill valid to have `/var` nodes in author-only containers.
+
 # Usage with Maven
 
 You can use this validator with the [FileVault Package Maven Plugin][3] in version 1.1.0 or higher like this
