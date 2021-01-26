@@ -37,7 +37,9 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
   <configuration>
     <validatorsSettings>
       <netcentric-aem-cloud>
-        <allowVarNodeOutsideContainer>false</allowVarNodeOutsideContainer><!-- default value is true, as it is allowed to have /var nodes inside author-only container -->
+        <options>
+          <allowVarNodeOutsideContainer>false</allowVarNodeOutsideContainer><!-- default value is true, as it is allowed to have /var nodes inside author-only container -->
+        </options>
       </netcentric-aem-cloud>
     </validatorsSettings>
   </configuration>
