@@ -25,6 +25,12 @@ Including `/var` in content packages being deployed to publish instances must be
 
 As this restriction technically only affects publish instances it is sstill valid to have `/var` nodes in author-only containers.
 
+## Using install hooks in mutable content packages
+
+The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (via replication) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427).
+
+Usage of install hooks in immutable content packages works, as those are installed by an admin user.
+
 # Usage with Maven
 
 You can use this validator with the [FileVault Package Maven Plugin][3] in version 1.1.0 or higher like this

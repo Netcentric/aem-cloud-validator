@@ -37,7 +37,7 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
             allowVarNodesOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS));
         }
         LOGGER.debug("netcentric-aem-cloud: Allow /var nodes outside containers: {}", allowVarNodesOutsideContainers);
-        return new AemCloudValidator(allowVarNodesOutsideContainers, context.getContainerValidationContext(), settings.getDefaultSeverity());
+        return new AemCloudValidator(allowVarNodesOutsideContainers, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override
