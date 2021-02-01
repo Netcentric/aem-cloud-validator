@@ -37,7 +37,9 @@ Currently only Oak index definitions of type `lucene` are supported in AEMaaCS. 
 
 ## Enforce naming schema for Oak index definition node names
 
-There is a mandatory naming scheme for Oak index definition node names which enforces them to end with `-custom-<integer>`. Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
+There is a mandatory naming scheme for Oak index definition node names which enforces them to end with `-custom-<version-as-integer>`. The format is used in [`IndexName`](https://github.com/apache/jackrabbit-oak/blob/08c7b20e0676739d9c445b5249c3f71004b6b894/oak-search/src/main/java/org/apache/jackrabbit/oak/plugins/index/search/spi/query/IndexName.java#L36) and allows for upgrades of existing index definitions in blue/green deployments.
+
+Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
 
 # Usage with Maven
 
