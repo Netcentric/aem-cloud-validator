@@ -21,9 +21,9 @@ Option | Mandatory | Description | Default Value
 
 ## Prevent using `/var` in content package
 
-Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
+Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The system user which takes care of installing the packages on publish (named `sling-distribution-importer`) does not have `write` permission in `/var`. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
-As this restriction technically only affects publish instances it is sstill valid to have `/var` nodes in author-only containers.
+As this restriction technically only affects publish instances it is still valid to have `/var` nodes in author-only containers.
 
 ## Prevent using install hooks in mutable content packages
 
