@@ -15,21 +15,29 @@ The following options are supported apart from the default settings mentioned in
 
 Option | Mandatory | Description | Default Value
 --- | --- | --- | ---
-allowVarNodeOutsideContainer | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
+`allowVarNodeOutsideContainer` | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
 
 # Included Checks
 
-## Including `/var` in content package
+## Prevent using `/var` in content package
 
 Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
 As this restriction technically only affects publish instances it is sstill valid to have `/var` nodes in author-only containers.
 
-## Using install hooks in mutable content packages
+## Prevent using install hooks in mutable content packages
 
-The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (via replication) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427).
+The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427).
 
-Usage of install hooks in immutable content packages works, as those are installed by an admin user.
+Usage of install hooks in immutable content packages works, as those are installed by an [admin user](https://github.com/apache/sling-org-apache-sling-jcr-packageinit/blob/7424e1b1f47758c12b6161e8689d6f9022257ce0/src/main/java/org/apache/sling/jcr/packageinit/impl/ExecutionPlanRepoInitializer.java#L157).
+
+## Enforce Oak index definitions of type `lucene`
+
+Currently only Oak index definitions of type `lucene` are supported in AEMaaCS. Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
+
+## Enforce naming schema for Oak index definition node names
+
+There is a mandatory naming scheme for Oak index definition node names which enforces them to end with `-custom-<integer>`. Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
 
 # Usage with Maven
 
