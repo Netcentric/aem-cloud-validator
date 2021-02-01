@@ -21,10 +21,10 @@ jobs:
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
     - name: Build with Maven
-      if: github.ref != 'refs/heads/master'
+      if: github.ref != 'refs/heads/main'
       run: mvn -B clean install
     - name: Deploy with Maven
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       run: mvn -B clean deploy
       env: 
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
