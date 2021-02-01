@@ -27,7 +27,7 @@ As this restriction technically only affects publish instances it is still valid
 
 ## Prevent using install hooks in mutable content packages
 
-The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427).
+The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). As AEMaaCS currently (version 2021.1.4738.20210107T143101Z) still ships with the old FileVault 3.4.0, you cannot circumvent this limitation with OSGi configuration (only possible since FileVault 3.4.6).
 
 Usage of install hooks in immutable content packages works, as those are installed by an [admin user](https://github.com/apache/sling-org-apache-sling-jcr-packageinit/blob/7424e1b1f47758c12b6161e8689d6f9022257ce0/src/main/java/org/apache/sling/jcr/packageinit/impl/ExecutionPlanRepoInitializer.java#L157).
 
