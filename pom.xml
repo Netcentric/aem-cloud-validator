@@ -4,7 +4,7 @@
 
     <groupId>biz.netcentric.filevault.validator</groupId>
     <artifactId>aem-cloud-validator</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <name>AEM as a Cloud Service Validator</name>
     <description>FileVault validator which verifies that a package complies with the AEM as a Cloud Service deployment restrictions outlined at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html.</description>
@@ -36,7 +36,7 @@
         <connection>scm:git:ssh://git@github.com/Netcentric/aem-cloud-validator.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/Netcentric/aem-cloud-validator.git</developerConnection>
         <url>https://github.com/Netcentric/aem-cloud-validator.git</url>
-        <tag>1.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
