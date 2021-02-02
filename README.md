@@ -5,7 +5,7 @@
 
 # Overview
 
-Validates content packages to prevent invalid usage patterns described in [Debugging AEM as a Cloud Service build and deployments](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#build-images) as those might lead to Build or Deployment errors in CloudManager. It is a validator implementation for the [FileVault Validation Module][2] and can be used for example with the [filevault-package-maven-plugin][3].
+Validates content packages to prevent invalid usage patterns for AEM as a Cloud Service (AEMaaCS) described in [Debugging AEM as a Cloud Service build and deployments](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#build-images) as those might lead to Build or Deployment errors in CloudManager. It is a validator implementation for the [FileVault Validation Module][2] and can be used for example with the [filevault-package-maven-plugin][3].
 
 *This validator only includes checks which are not covered by the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] so it is strongly recommended to also enable the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] in your build.*
 
@@ -63,7 +63,7 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
     <dependency>
       <groupId>biz.netcentric.filevault.validator</groupId>
       <artifactId>aem-cloud-validator</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
     </dependency>
   </dependencies>
 </plugin>
