@@ -29,6 +29,7 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(AemCloudValidatorFactory.class);
 
     private static final String OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS = "allowVarNodeOutsideContainer";
+    private static final String OPTION_ALLOW_LIBS_NODE = "allowLibsNode";
     
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
@@ -36,8 +37,11 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
         if (settings.getOptions().containsKey(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS)) {
             allowVarNodesOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS));
         }
-        LOGGER.debug("netcentric-aem-cloud: Allow /var nodes outside containers: {}", allowVarNodesOutsideContainers);
-        return new AemCloudValidator(allowVarNodesOutsideContainers, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
+        boolean allowLibsNode = false;
+        if (settings.getOptions().containsKey(OPTION_ALLOW_LIBS_NODE)) {
+            allowVarNodesOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
+        }
+        return new AemCloudValidator(allowVarNodesOutsideContainers, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override
