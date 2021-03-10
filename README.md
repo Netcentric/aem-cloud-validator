@@ -26,11 +26,11 @@ Including `/var` in content packages being deployed to publish instances must be
 As this restriction technically only affects publish instances it is still valid to have `/var` nodes in author-only containers.
 As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html).
 
-## Prevent using install hooks in mutable content packages
+## Prevent using install hooks in content packages
 
-The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). As AEMaaCS currently (version 2021.1.4738.20210107T143101Z) still ships with the old FileVault 3.4.0, you cannot circumvent this limitation with OSGi configuration (only possible since FileVault 3.4.6).
+The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. The code for that can be found in [ContentPackageExtractor](https://github.com/apache/sling-org-apache-sling-distribution-journal/blob/ba075183c374a09b86ca6fa4755a05b26e74866d/src/main/java/org/apache/sling/distribution/journal/bookkeeper/ContentPackageExtractor.java#L93). Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). As AEMaaCS currently (version 2021.1.4738.20210107T143101Z) still ships with the old FileVault 3.4.0, you cannot circumvent this limitation with OSGi configuration (only possible since FileVault 3.4.6).
 
-Usage of install hooks in immutable content packages works, as those are installed by an [admin user](https://github.com/apache/sling-org-apache-sling-jcr-packageinit/blob/7424e1b1f47758c12b6161e8689d6f9022257ce0/src/main/java/org/apache/sling/jcr/packageinit/impl/ExecutionPlanRepoInitializer.java#L157).
+Usage of install hooks in immutable content packages does not work either as the transformation of the [cp2fm converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter) strips those out in transformed packages. Further details in [SLING-10205](https://issues.apache.org/jira/browse/SLING-10205).
 
 ## Enforce Oak index definitions of type `lucene`
 
