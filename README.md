@@ -13,10 +13,10 @@ Validates content packages to prevent invalid usage patterns for AEM as a Cloud 
 
 The following options are supported apart from the default settings mentioned in [FileVault validation][2].
 
-Option | Mandatory | Description | Default Value
---- | --- | --- | ---
-`allowVarNodeOutsideContainer` | no | `true` means `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
-`allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false`
+Option | Mandatory | Description | Default Value | Since Version
+--- | --- | --- | --- | ---
+`allowVarNodeOutsideContainer` | no | `true` means `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true` | 1.0.0
+`allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false` | 1.2.0
 
 # Included Checks
 
