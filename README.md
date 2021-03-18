@@ -15,7 +15,8 @@ The following options are supported apart from the default settings mentioned in
 
 Option | Mandatory | Description | Default Value
 --- | --- | --- | ---
-`allowVarNodeOutsideContainer` | no | `true` in case `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
+`allowVarNodeOutsideContainer` | no | `true` means `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true`
+`allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false`
 
 # Included Checks
 
@@ -25,6 +26,10 @@ Including `/var` in content packages being deployed to publish instances must be
 
 As this restriction technically only affects publish instances it is still valid to have `/var` nodes in author-only containers.
 As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html).
+
+## Prevent using `/libs` in content package
+
+Changes below `/libs` may be overwritten by AEM product upgrades (applied regularly). Further details at <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing>. Instead put overlays in `/apps`.
 
 ## Prevent using install hooks in content packages
 
