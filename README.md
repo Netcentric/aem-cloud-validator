@@ -37,6 +37,11 @@ The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks
 
 Usage of install hooks in immutable content packages does not work either as the transformation of the [cp2fm converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter) strips those out in transformed packages. Further details in [SLING-10205](https://issues.apache.org/jira/browse/SLING-10205).
 
+## Prevent using mutable content in "mixed" content packages
+
+Content packages of type `mixed` are allowed to have both mutable and immutable nodes. AEMaaCS will only ever install the immutable part of it. The mutable part won't be installed as that cannot be successful (due to missing write access at the time of installation).
+Further details at <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/deploying/overview.html?lang=en#deploying-content-packages-via-cloud-manager-and-package-manager>.
+
 ## Enforce Oak index definitions of type `lucene`
 
 Currently only Oak index definitions of type `lucene` are supported in AEMaaCS. Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
