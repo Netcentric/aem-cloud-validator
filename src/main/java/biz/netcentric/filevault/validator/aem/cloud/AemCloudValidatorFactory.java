@@ -19,18 +19,14 @@ import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @MetaInfServices
 public class AemCloudValidatorFactory implements ValidatorFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AemCloudValidatorFactory.class);
-
     private static final String OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS = "allowVarNodeOutsideContainer";
     private static final String OPTION_ALLOW_LIBS_NODE = "allowLibsNode";
-    
+
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
         boolean allowVarNodesOutsideContainers = true;
@@ -39,7 +35,7 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
         }
         boolean allowLibsNode = false;
         if (settings.getOptions().containsKey(OPTION_ALLOW_LIBS_NODE)) {
-            allowVarNodesOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
+            allowLibsNode = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
         }
         return new AemCloudValidator(allowVarNodesOutsideContainers, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
