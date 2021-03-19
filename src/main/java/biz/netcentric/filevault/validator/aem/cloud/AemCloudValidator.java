@@ -93,14 +93,17 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
                 numVarNodeViolations++;
             }
         }
-        if (isMutablePath(path)) {
-            hasMutableNodes = true;
-            if (numMutableNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && PackageType.MIXED.equals(packageType)) {
-                messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE));
-                numMutableNodeViolations++;
+        // skip root node for mutable/immutable path classification
+        if (!"/".equals(path)) {
+            if (isMutablePath(path)) {
+                hasMutableNodes = true;
+                if (numMutableNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && PackageType.MIXED.equals(packageType)) {
+                    messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE));
+                    numMutableNodeViolations++;
+                }
+            } else {
+                hasImmutableNodes = true;
             }
-        } else {
-            hasImmutableNodes = true;
         }
         if (numLibNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && !allowLibsNode && path.startsWith("/libs")) {
             messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_LIBS_NODES));
