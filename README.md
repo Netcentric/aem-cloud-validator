@@ -34,7 +34,7 @@ Principal | Permissions
 `sling-distribution` | allow `jcr:read,rep:write` on `/var/sling/distribution`
 `content-writer-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/content`
 `repository-reader-service` | allow `jcr:read` on `/`
-`version-manager-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/conf`</br/>allow `jcr:read,rep:write,jcr:versionManagement` on `/etc`
+`version-manager-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/conf`<br/>allow `jcr:read,rep:write,jcr:versionManagement` on `/etc`
 `group-administration-service` | allow `jcr:all` on `/home/groups`
 `user-administration-service` | allow `jcr:all` on `/home/users`
 `namespace-mgmt-service` | allow `jcr:namespaceManagement` on `:repository`
