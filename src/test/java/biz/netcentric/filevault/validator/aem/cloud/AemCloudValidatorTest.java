@@ -28,4 +28,22 @@ class AemCloudValidatorTest {
         Assertions.assertTrue(AemCloudValidator.isPackagePathInstalledConditionally("author", Paths.get("/apps/install.author/container.zip")));
         Assertions.assertTrue(AemCloudValidator.isPackagePathInstalledConditionally("author", Paths.get("/apps/install.author/subfolder/container.zip")));
     }
+
+    @Test
+    void testIsMutablePath() {
+        Assertions.assertTrue(AemCloudValidator.isMutablePath("/"));
+        Assertions.assertTrue(AemCloudValidator.isMutablePath("/conf"));
+        Assertions.assertTrue(AemCloudValidator.isMutablePath("/conf/test"));
+        Assertions.assertFalse(AemCloudValidator.isMutablePath("/libs"));
+        Assertions.assertFalse(AemCloudValidator.isMutablePath("/libs/test"));
+    }
+
+    @Test
+    void testIsPathWritableByDistributionJournalImporter() {
+        Assertions.assertTrue(AemCloudValidator.isPathWritableByDistributionJournalImporter("/content"));
+        Assertions.assertTrue(AemCloudValidator.isPathWritableByDistributionJournalImporter("/content/test"));
+        Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/tmp"));
+        Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/var"));
+        Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/var/subnode/myfile"));
+    }
 }

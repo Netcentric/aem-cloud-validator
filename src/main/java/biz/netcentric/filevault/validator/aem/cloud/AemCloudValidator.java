@@ -20,8 +20,6 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
@@ -38,9 +36,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class AemCloudValidator implements NodePathValidator, MetaInfPathValidator, DocumentViewXmlValidator {
 
-    static final String VIOLATION_MESSAGE_VAR_NODES_CONDITION_CONTAINER = "only allowed in author-specific packages";
-    static final String VIOLATION_MESSAGE_VAR_NODES_CONDITION_OVERALL = "not allowed";
-    static final String VIOLATION_MESSAGE_VAR_NODES = "Using nodes below '/var' is %s. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%%2Fvar-in-content-package";
+    static final String VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER = "only allowed in author-specific packages";
+    static final String VIOLATION_MESSAGE_CONDITION_OVERALL = "not allowed";
+    static final String VIOLATION_MESSAGE_READONLY_MUTABLE_PATH = "Using mutable nodes in this repository location is %s  as it is not writable by the underlying service user on publish. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%%2Fvar-in-content-package";
     static final String VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE = "Using install hooks in mutable content packages leads to deployment failures as the underlying service user on the publish does not have the right to execute those.";
     static final String VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME = "All Oak index definition node names must end with '-custom-<integer>' but found name '%s'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#how-to-use";
     static final String VIOLATION_MESSAGE_LIBS_NODES = "Nodes below '/libs' may be overwritten by future product upgrades. Rather use '/apps'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing";
@@ -51,13 +49,20 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     // this path is relative to META-INF
     private static final Path INSTALL_HOOK_PATH = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     private static final Pattern INDEX_DEFINITION_NAME_PATTERN = Pattern.compile(".*-custom-\\d++");
-    private static final Set<String> IMMUTABLE_PATH_PREFIXES = new HashSet<>(Arrays.asList("/apps", "/libs", "/oak:index"));
+    private static final Collection<String> IMMUTABLE_PATH_PREFIXES = Arrays.asList("/apps", "/libs", "/oak:index");
+    private static final Collection<String> WRITABLE_PATHS_BY_DISTRIBUTION_IMPORTER = Arrays.asList(
+            "/content",     // access provided by system user content-writer-service and sling-distribution-importer
+            "/etc",         // access provided by system user version-manager-service and sling-distribution-importer
+            "/conf",        // access provided by system user version-manager-service and sling-distribution-importer
+            "/home/users",  // access provided by system user user-administration-service
+            "/home/groups"  // access provided by system user group-administration-service
+            );
 
     private final @NotNull ValidationMessageSeverity defaultSeverity;
     private final ValidationContext containerValidationContext;
     private final PackageType packageType;
     private boolean hasMutableNodes;
-    private final boolean allowVarNodesOutsideContainers;
+    private final boolean allowReadOnlyMutablePaths;
     private final boolean allowLibsNode;
     private boolean hasInstallHooks;
     private boolean hasImmutableNodes;
@@ -67,10 +72,10 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     private int numLibNodeViolations = 0;
     private int numMutableNodeViolations = 0;
 
-    public AemCloudValidator(boolean allowVarNodesOutsideContainers, boolean allowLibsNode, @Nullable PackageType packageType,
+    public AemCloudValidator(boolean allowReadOnlyMutablePaths, boolean allowLibsNode, @Nullable PackageType packageType,
             @Nullable ValidationContext containerValidationContext, @NotNull ValidationMessageSeverity defaultSeverity) {
         super();
-        this.allowVarNodesOutsideContainers = allowVarNodesOutsideContainers;
+        this.allowReadOnlyMutablePaths = allowReadOnlyMutablePaths;
         this.allowLibsNode = allowLibsNode;
         this.packageType = packageType;
         this.containerValidationContext = containerValidationContext;
@@ -83,20 +88,20 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     @Override
     public Collection<ValidationMessage> validate(@NotNull String path) {
         Collection<ValidationMessage> messages = new ArrayList<>();
-        if (numVarNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && path.startsWith("/var/")) {
-            // check if package itself is only used on author
-            if (!allowVarNodesOutsideContainers || !isContainedInAuthorOnlyPackage(containerValidationContext)) {
-                // only emit once per package
-                messages.add(new ValidationMessage(defaultSeverity, String.format(
-                        VIOLATION_MESSAGE_VAR_NODES, allowVarNodesOutsideContainers ? VIOLATION_MESSAGE_VAR_NODES_CONDITION_CONTAINER
-                                : VIOLATION_MESSAGE_VAR_NODES_CONDITION_OVERALL)));
-                numVarNodeViolations++;
-            }
-        }
         // skip root node for mutable/immutable path classification
         if (!"/".equals(path)) {
             if (isMutablePath(path)) {
                 hasMutableNodes = true;
+                if (numVarNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && !isPathWritableByDistributionJournalImporter(path)) {
+                    // check if package itself is only used on author
+                    if (!allowReadOnlyMutablePaths || !isContainedInAuthorOnlyPackage(containerValidationContext)) {
+                        // only emit once per package
+                        messages.add(new ValidationMessage(defaultSeverity, String.format(
+                                VIOLATION_MESSAGE_READONLY_MUTABLE_PATH, allowReadOnlyMutablePaths ? VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER
+                                        : VIOLATION_MESSAGE_CONDITION_OVERALL)));
+                        numVarNodeViolations++;
+                    }
+                }
                 if (numMutableNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && PackageType.MIXED.equals(packageType)) {
                     messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE));
                     numMutableNodeViolations++;
@@ -112,13 +117,26 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
         return messages;
     }
 
-    private boolean isMutablePath(String path) {
+    static boolean isMutablePath(String path) {
         for (String immutablePathPrefix : IMMUTABLE_PATH_PREFIXES) {
             if (path.startsWith(immutablePathPrefix+"/") || path.equals(immutablePathPrefix)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * 
+     * @return {@code true} in case the given mutable path is writable by the service user used by the Content Distribution Journal Importer used on AEMaaCS publish
+     */
+    static boolean isPathWritableByDistributionJournalImporter(String path) {
+        for (String writablePath : WRITABLE_PATHS_BY_DISTRIBUTION_IMPORTER) {
+            if (path.startsWith(writablePath + "/") || path.equals(writablePath)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @param containerValidationContext the container validation context of the package to be validated.

@@ -15,16 +15,16 @@ The following options are supported apart from the default settings mentioned in
 
 Option | Mandatory | Description | Default Value | Since Version
 --- | --- | --- | --- | ---
-`allowVarNodeOutsideContainer` | no | `true` means `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true` | 1.0.0
+`allowReadOnlyMutablePathsOutsideContainers` (or `allowVarNodeOutsideContainer` deprecated) | no | `true` means read-only paths (i.e. paths to which the service user used for mutable package installation on publish does not have write permission) should be allowed. Otherwise those won't only be allowed in author-only container packages. | `true` | 1.0.0
 `allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false` | 1.2.0
 
 # Included Checks
 
-## Prevent using `/var` in content package
+## Prevent using certain paths in mutable content packages
 
-Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The system user which takes care of installing the packages on publish (named `sling-distribution-importer`) does not have `write` permission in `/var`. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
+Including `/var` and `tmp` and some others in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The system user which takes care of installing the packages on publish (named `sling-distribution-importer`) does not have `jcr:write` permission to those locations. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
-As this restriction technically only affects publish instances it is still valid to have `/var` nodes in author-only containers.
+As this restriction technically only affects publish instances it is still valid to have those nodes in author-only containers.
 As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html).
 
 ## Prevent using `/libs` in content package
