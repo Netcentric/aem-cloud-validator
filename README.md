@@ -15,17 +15,30 @@ The following options are supported apart from the default settings mentioned in
 
 Option | Mandatory | Description | Default Value | Since Version
 --- | --- | --- | --- | ---
-`allowVarNodeOutsideContainer` | no | `true` means `/var` nodes should be allowed in content packages which do not contain other packages (i.e. are no containers). Otherwise `var` nodes are not even allowed in standalone packages. | `true` | 1.0.0
+`allowReadOnlyMutablePathsOutsideContainers` (or `allowVarNodeOutsideContainer` deprecated) | no | `true` means read-only paths (i.e. paths to which the service session used for mutable package installation on publish does not have write permission) should be allowed. Otherwise those won't only be allowed in author-only container packages. | `true` | 1.2.0  (1.0.0 for deprecated `allowVarNodeOutsideContainer`)
 `allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false` | 1.2.0
 
 # Included Checks
 
-## Prevent using `/var` in content package
+## Prevent using certain paths in mutable content packages
 
-Including `/var` in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The system user which takes care of installing the packages on publish (named `sling-distribution-importer`) does not have `write` permission in `/var`. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
+Including `/var` and `tmp` and some others in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The [system session](https://sling.apache.org/documentation/the-sling-engine/service-authentication.html#slingrepository) which takes care of installing the packages on publish does not have `jcr:write` permission to those locations. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
-As this restriction technically only affects publish instances it is still valid to have `/var` nodes in author-only containers.
-As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html).
+As this restriction technically only affects publish instances it is still valid to have those nodes in [author-only containers](https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/aem-project-content-package-structure.html#embeddeds).
+As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` user via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html). Here is the full list of default permissions of the system session extracted from AEM 2021.2.4887.20210204T154817Z.
+All the following principals are mapped via the service user mapping for `org.apache.sling.distribution.journal:importer` on publish
+
+Principal | Permissions
+--- | ---
+`sling-distribution-importer` | allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/content`<br/>allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/conf`<br/>allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/etc`<br/>allow `jcr:nodeTypeDefinitionManagement,rep:privilegeManagement` on `:repository`
+`sling-distribution` | allow `jcr:read,rep:write` on `/var/sling/distribution`
+`content-writer-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/content`
+`repository-reader-service` | allow `jcr:read` on `/`
+`version-manager-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/conf`</br/>allow `jcr:read,rep:write,jcr:versionManagement` on `/etc`
+`group-administration-service` | allow `jcr:all` on `/home/groups`
+`user-administration-service` | allow `jcr:all` on `/home/users`
+`namespace-mgmt-service` | allow `jcr:namespaceManagement` on `:repository`
+
 
 ## Prevent using `/libs` in content package
 
