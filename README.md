@@ -7,7 +7,7 @@
 
 Validates content packages to prevent invalid usage patterns for AEM as a Cloud Service (AEMaaCS) described in [Debugging AEM as a Cloud Service build and deployments](https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#build-images) as those might lead to Build or Deployment errors in CloudManager. It is a validator implementation for the [FileVault Validation Module][2] and can be used for example with the [filevault-package-maven-plugin][3].
 
-*This validator only includes checks which are not covered by the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] so it is strongly recommended to also enable the [aem-analyser-maven-plugin][aem-analyser-maven-plugin] in your build.*
+*This validator only includes checks which are not covered by the [aemanalyser-maven-plugin][aemanalyser-maven-plugin] so it is strongly recommended to also enable the [aemanalyser-maven-plugin][aemanalyser-maven-plugin] in your build.*
 
 # Settings
 
@@ -94,6 +94,6 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
 ```
 
 
-[aem-analyser-maven-plugin]: https://github.com/adobe/aemanalyser-maven-plugin/tree/main/aemanalyser-maven-plugin
+[aemanalyser-maven-plugin]: https://github.com/adobe/aemanalyser-maven-plugin/tree/main/aemanalyser-maven-plugin
 [2]: https://jackrabbit.apache.org/filevault/validation.html
 [3]: https://jackrabbit.apache.org/filevault-package-maven-plugin/index.html
