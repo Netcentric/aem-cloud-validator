@@ -3,6 +3,7 @@ package biz.netcentric.filevault.validator.aem.cloud;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /*-
  * #%L
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
@@ -43,17 +46,16 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     static final String VIOLATION_MESSAGE_LIBS_NODES = "Nodes below '/libs' may be overwritten by future product upgrades. Rather use '/apps'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE = "Mutable nodes in mixed package types are not installed!";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_AND_IMMUTABLE_NODES_IN_SAME_PACKAGE = "Mutable and immutable nodes must not be mixed in the same package. You must separate those into two packages and give them both a dedicated package type!";
+    static final String VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION = "Only oak:QueryIndexDefinitions of type='lucene' are supported in AEMaaCS but found type='%s'. Compare with https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service";
 
     // this path is relative to META-INF
     private static final Path INSTALL_HOOK_PATH = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
-    private static final @NotNull String VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION = "Only oak:QueryIndexDefinitions of type='lucene' are supported in AEMaaCS but found type='%s'. Compare with https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service";
-
     private static final Pattern INDEX_DEFINITION_NAME_PATTERN = Pattern.compile(".*-custom-\\d++");
+    private static final Set<String> IMMUTABLE_PATH_PREFIXES = new HashSet<>(Arrays.asList("/apps", "/libs", "/oak:index"));
 
     private final @NotNull ValidationMessageSeverity defaultSeverity;
     private final ValidationContext containerValidationContext;
     private final PackageType packageType;
-    private boolean foundViolation;
     private boolean hasMutableNodes;
     private final boolean allowVarNodesOutsideContainers;
     private final boolean allowLibsNode;
@@ -73,7 +75,6 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
         this.packageType = packageType;
         this.containerValidationContext = containerValidationContext;
         this.defaultSeverity = defaultSeverity;
-        this.foundViolation = false;
         this.hasMutableNodes = false;
         this.hasImmutableNodes = false;
         this.hasInstallHooks = false;
@@ -86,14 +87,13 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
             // check if package itself is only used on author
             if (!allowVarNodesOutsideContainers || !isContainedInAuthorOnlyPackage(containerValidationContext)) {
                 // only emit once per package
-                foundViolation = true;
                 messages.add(new ValidationMessage(defaultSeverity, String.format(
                         VIOLATION_MESSAGE_VAR_NODES, allowVarNodesOutsideContainers ? VIOLATION_MESSAGE_VAR_NODES_CONDITION_CONTAINER
                                 : VIOLATION_MESSAGE_VAR_NODES_CONDITION_OVERALL)));
                 numVarNodeViolations++;
             }
         }
-        if (!path.startsWith("/apps/") && !path.startsWith("/libs/") && !path.startsWith("/oak:index/")) {
+        if (isMutablePath(path)) {
             hasMutableNodes = true;
             if (numMutableNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && PackageType.MIXED.equals(packageType)) {
                 messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE));
@@ -107,6 +107,15 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
             numLibNodeViolations++;
         }
         return messages;
+    }
+
+    private boolean isMutablePath(String path) {
+        for (String immutablePathPrefix : IMMUTABLE_PATH_PREFIXES) {
+            if (path.startsWith(immutablePathPrefix+"/") || path.equals(immutablePathPrefix)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** @param containerValidationContext the container validation context of the package to be validated.
@@ -140,6 +149,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
         if (hasInstallHooks && hasMutableNodes) {
             messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
         }
+        // for non-set package types usually the package type is determined by cp2fm, but it will be MIXED in case both mutable and immutable nodes are contained
         if (packageType == null && hasMutableNodes && hasImmutableNodes) {
             messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_MUTABLE_NODES_AND_IMMUTABLE_NODES_IN_SAME_PACKAGE));
         }
