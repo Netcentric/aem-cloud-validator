@@ -15,7 +15,7 @@ The following options are supported apart from the default settings mentioned in
 
 Option | Mandatory | Description | Default Value | Since Version
 --- | --- | --- | --- | ---
-`allowReadOnlyMutablePathsOutsideContainers` (or `allowVarNodeOutsideContainer` deprecated) | no | `true` means read-only paths (i.e. paths to which the service session used for mutable package installation on publish does not have write permission) should be allowed. Otherwise those won't only be allowed in author-only container packages. | `true` | 1.2.0  (1.0.0 for deprecated `allowVarNodeOutsideContainer`)
+`allowReadOnlyMutablePathsOutsideContainers` (or `allowVarNodeOutsideContainer` deprecated) | no | `true` means read-only paths (i.e. paths to which the service session used for mutable package installation on publish does not have write permission) should be allowed. Otherwise those won't only be allowed in author-only container packages. | `true` | 1.2.0 
 `allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false` | 1.2.0
 
 # Included Checks
