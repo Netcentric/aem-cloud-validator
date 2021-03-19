@@ -22,10 +22,23 @@ Option | Mandatory | Description | Default Value | Since Version
 
 ## Prevent using certain paths in mutable content packages
 
-Including `/var` and `tmp` and some others in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The system user which takes care of installing the packages on publish (named `sling-distribution-importer`) does not have `jcr:write` permission to those locations. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
+Including `/var` and `tmp` and some others in content packages being deployed to publish instances must be prevented, as it causes deployment failures. The [system session](https://sling.apache.org/documentation/the-sling-engine/service-authentication.html#slingrepository) which takes care of installing the packages on publish does not have `jcr:write` permission to those locations. Further details at <https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package>.
 
 As this restriction technically only affects publish instances it is still valid to have those nodes in author-only containers.
-As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html).
+As a *temporary workaround* you can also [extend the privileges of the `sling-distribution-importer` user via a custom repoinit configuration](https://helpx.adobe.com/in/experience-manager/kb/cm/cloudmanager-deploy-fails-due-to-sling-distribution-aem.html). Here is the full list of default permissions of the system session extracted from AEM 2021.2.4887.20210204T154817Z.
+All the following principals are mapped via the service user mapping for `org.apache.sling.distribution.journal:importer` on publish
+
+Principal | Permissions
+--- | ---
+`sling-distribution-importer` | allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/content`<br/>allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/conf`<br/>allow `jcr:modifyAccessControl,jcr:readAccessControl` on `/etc`<br/>allow `jcr:nodeTypeDefinitionManagement,rep:privilegeManagement` on `:repository`
+`sling-distribution` | allow `jcr:read,rep:write` on `/var/sling/distribution`
+`content-writer-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/content`
+`repository-reader-service` | allow `jcr:read` on `/`
+`version-manager-service` | allow `jcr:read,rep:write,jcr:versionManagement` on `/conf`</br/>allow `jcr:read,rep:write,jcr:versionManagement` on `/etc`
+`group-administration-service` | allow `jcr:all` on `/home/groups`
+`user-administration-service` | allow `jcr:all` on `/home/users`
+`namespace-mgmt-service` | allow `jcr:namespaceManagement` on `:repository`
+
 
 ## Prevent using `/libs` in content package
 
