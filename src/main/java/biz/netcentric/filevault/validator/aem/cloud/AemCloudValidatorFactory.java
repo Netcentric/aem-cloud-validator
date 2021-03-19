@@ -17,7 +17,6 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
-import org.apache.jackrabbit.vault.validation.spi.impl.AdvancedFilterValidatorFactory;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
@@ -35,19 +34,19 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
 
     @Override
     public Validator createValidator(@NotNull ValidationContext context, @NotNull ValidatorSettings settings) {
-        boolean allowReadOnlyMutablePathsOutsideContainers = true;
+        boolean allowReadOnlyMutablePaths = false;
         if (settings.getOptions().containsKey(OPTION_ALLOW_READONLY_MUTABLE_PATHS)) {
-            allowReadOnlyMutablePathsOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_READONLY_MUTABLE_PATHS));
+            allowReadOnlyMutablePaths = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_READONLY_MUTABLE_PATHS));
             // deprecated option
         } else if (settings.getOptions().containsKey(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS)) {
-            allowReadOnlyMutablePathsOutsideContainers = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS));
+            allowReadOnlyMutablePaths = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS));
             LOGGER.warn("Using deprecated option 'allowVarNodeOutsideContainer', please use 'allowReadOnlyMutablePaths' instead");
         }
         boolean allowLibsNode = false;
         if (settings.getOptions().containsKey(OPTION_ALLOW_LIBS_NODE)) {
             allowLibsNode = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
         }
-        return new AemCloudValidator(allowReadOnlyMutablePathsOutsideContainers, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
+        return new AemCloudValidator(allowReadOnlyMutablePaths, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override
