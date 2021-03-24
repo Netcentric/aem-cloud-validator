@@ -44,11 +44,11 @@ Principal | Permissions
 
 Changes below `/libs` may be overwritten by AEM product upgrades (applied regularly). Further details at <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing>. Instead put overlays in `/apps`.
 
-## Prevent using install hooks in content packages
+## Prevent using install hooks in mutable content packages
 
 The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. The code for that can be found in [ContentPackageExtractor](https://github.com/apache/sling-org-apache-sling-distribution-journal/blob/ba075183c374a09b86ca6fa4755a05b26e74866d/src/main/java/org/apache/sling/distribution/journal/bookkeeper/ContentPackageExtractor.java#L93). Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). As AEMaaCS currently (version 2021.1.4738.20210107T143101Z) still ships with the old FileVault 3.4.0, you cannot circumvent this limitation with OSGi configuration (only possible since FileVault 3.4.6).
 
-Usage of install hooks in immutable content packages does not work either as the transformation of the [cp2fm converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter) strips those out in transformed packages. Further details in [SLING-10205](https://issues.apache.org/jira/browse/SLING-10205).
+*Usage of install hooks in immutable content packages does not work either as the transformation of the [cp2fm converter](https://github.com/apache/sling-org-apache-sling-feature-cpconverter) strips those out in transformed packages. Further details in [SLING-10205](https://issues.apache.org/jira/browse/SLING-10205). This is not enforced though by this plugin, though*.
 
 ## Prevent using mutable content in "mixed" content packages
 
