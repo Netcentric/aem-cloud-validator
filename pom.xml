@@ -262,12 +262,14 @@
                 <executions>
                     <execution>
                         <goals>
+                            <goal>install</goal>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <postBuildHookScript>verify.groovy</postBuildHookScript>
                             <streamLogsOnFailures>true</streamLogsOnFailures>
+                            <localRepositoryPath>target/it-repo</localRepositoryPath>
                         </configuration>
                     </execution>
                 </executions>
