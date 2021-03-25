@@ -263,11 +263,11 @@
                     <execution>
                         <goals>
                             <goal>run</goal>
-                            <!-- <goal>verify</goal>  -->
                         </goals>
                         <configuration>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <postBuildHookScript>verify.groovy</postBuildHookScript>
+                            <streamLogsOnFailures>true</streamLogsOnFailures>
                         </configuration>
                     </execution>
                 </executions>
