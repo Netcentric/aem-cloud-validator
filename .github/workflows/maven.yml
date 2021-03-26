@@ -23,11 +23,6 @@ jobs:
     - name: Build with Maven
       if: github.ref != 'refs/heads/main'
       run: mvn -B clean install
-    - name: Upload IT
-      uses: actions/upload-artifact@v2
-      with:
-        name: IT
-        path: target/it/
     - name: Deploy with Maven
       if: github.ref == 'refs/heads/main'
       run: mvn -B clean deploy
