@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>biz.netcentric.filevault.validator.aem.cloud.it</groupId>
+    <artifactId>project1</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                 <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.2.0</version>
+                 </plugin>
+                 <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                 </plugin>
+                 <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                 </plugin>
+                 <plugin>
+                    <groupId>org.apache.jackrabbit</groupId>
+                    <artifactId>filevault-package-maven-plugin</artifactId>
+                    <version>1.1.6</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <failOnDuplicateEntries>false</failOnDuplicateEntries>
+                        <filterSource>src/main/META-INF/vault/filter.xml</filterSource>
+                        <validatorsSettings>
+                            <jackrabbit-filter>
+                                <!-- define additional valid roots which are always provided in AEM -->
+                                <options>
+                                    <validRoots>/,/libs,/apps,/apps/kaw,/etc,/var,/tmp,/conf,/content,/content/campaigns/,/content/cq:tags/,/content/dam,/content/experience-fragments/,/content/projects/,/content/screens/,/etc/packages</validRoots>
+                                </options>
+                            </jackrabbit-filter>
+                            <netcentric-aem-cloud>
+                                <defaultSeverity>warn</defaultSeverity>
+                            </netcentric-aem-cloud>
+                        </validatorsSettings>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>biz.netcentric.filevault.validator</groupId>
+                            <artifactId>aem-cloud-validator</artifactId>
+                            <version>@project.version@</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+             </plugins>
+        </pluginManagement>
+
+    </build>
+
+    <profiles>
+        <profile>
+            <!-- this profile is active for content-packages only -->
+            <id>packaging-contentpackage</id>
+            <!-- profile inheritance does not work in Maven (https://issues.apache.org/jira/browse/MNG-5127)
+                therefore the activation section needs to be copied from cq-parent -->
+            <activation>
+                <file>
+                    <exists>${basedir}/src/main/jcr_root</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.jackrabbit</groupId>
+                        <artifactId>filevault-package-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <modules>
+        <module>application-package</module>
+        <module>content-package</module>
+        <module>mixed-package</module>
+    </modules>
+
+</project>
