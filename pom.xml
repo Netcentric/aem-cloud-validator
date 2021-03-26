@@ -269,7 +269,8 @@
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                             <postBuildHookScript>verify.groovy</postBuildHookScript>
                             <streamLogsOnFailures>true</streamLogsOnFailures>
-                            <localRepositoryPath>target/it-repo</localRepositoryPath>
+                            <!-- reuse global repo for speeding up builds
+                            <localRepositoryPath>target/it-repo</localRepositoryPath> -->
                         </configuration>
                     </execution>
                 </executions>
