@@ -22,19 +22,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
+import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.DocViewNode;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
+import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AemCloudValidator implements NodePathValidator, MetaInfPathValidator, DocumentViewXmlValidator {
+public class AemCloudValidator implements NodePathValidator, MetaInfPathValidator, DocumentViewXmlValidator, PropertiesValidator {
 
     static final String VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER = "only allowed in author-specific packages";
     static final String VIOLATION_MESSAGE_CONDITION_OVERALL = "not allowed";
@@ -208,6 +210,16 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
                         String.format(VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, node.name)));
             }
             return messages;
+        }
+        return null;
+    }
+
+    @Override
+    public @Nullable Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
+        if (!properties.getExternalHooks().isEmpty()) {
+            if (PackageType.CONTENT.equals(packageType) || PackageType.MIXED.equals(packageType)) {
+                return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
+            }
         }
         return null;
     }
