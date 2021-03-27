@@ -184,7 +184,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
         // is it install hook?
         if (filePath.startsWith(INSTALL_HOOK_PATH) && filePath.toString().endsWith(".jar")) {
             // is it mutable content package?
-            if (PackageType.CONTENT.equals(packageType) || PackageType.MIXED.equals(packageType)) {
+            if (PackageType.CONTENT.equals(packageType)) {
                 return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
             } else if (packageType == null) {
                 // defer checking until one is sure that the package has mutable content
@@ -217,7 +217,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull PackageProperties properties) {
         if (!properties.getExternalHooks().isEmpty()) {
-            if (PackageType.CONTENT.equals(packageType) || PackageType.MIXED.equals(packageType)) {
+            if (PackageType.CONTENT.equals(packageType)) {
                 return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
             }
         }
