@@ -1,7 +1,8 @@
 [![Build Status](https://img.shields.io/github/workflow/status/Netcentric/aem-cloud-validator/maven-cicd)](https://github.com/Netcentric/aem-cloud-validator/actions)
 [![License](https://img.shields.io/badge/License-EPL%201.0-red.svg)](https://opensource.org/licenses/EPL-1.0)
 [![Maven Central](https://img.shields.io/maven-central/v/biz.netcentric.filevault.validator/aem-cloud-validator)](https://search.maven.org/artifact/biz.netcentric.filevault.validator/aem-cloud-validator)
-
+[![SonarCloud Status](https://sonarcloud.io/api/project_badges/measure?project=Netcentric_aem-cloud-validator&metric=alert_status)](https://sonarcloud.io/dashboard?id=Netcentric_aem-cloud-validator)
+[![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=Netcentric_aem-cloud-validator&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=Netcentric_aem-cloud-validator)
 
 # Overview
 
