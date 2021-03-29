@@ -24,6 +24,7 @@ jobs:
       if: github.ref != 'refs/heads/main'
       env: 
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: mvn -B clean install org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Netcentric_aem-cloud-validator -Dsonar.organization=netcentric -Dsonar.host.url=https://sonarcloud.io -Pjacoco-report
     - name: Deploy with Maven
       if: github.ref == 'refs/heads/main'
@@ -31,4 +32,5 @@ jobs:
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USER }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: mvn -B clean deploy org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Netcentric_aem-cloud-validator -Dsonar.organization=netcentric -Dsonar.host.url=https://sonarcloud.io -Pjacoco-report
