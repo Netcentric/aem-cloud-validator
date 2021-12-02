@@ -96,7 +96,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
                 hasMutableNodes = true;
                 if (numVarNodeViolations < MAX_NUM_VIOLATIONS_PER_TYPE && !isPathWritableByDistributionJournalImporter(path)) {
                     // check if package itself is only used on author
-                    if (!allowReadOnlyMutablePaths || !isContainedInAuthorOnlyPackage(containerValidationContext)) {
+                    if (!allowReadOnlyMutablePaths && !isContainedInAuthorOnlyPackage(containerValidationContext)) {
                         // only emit once per package
                         messages.add(new ValidationMessage(defaultSeverity, String.format(
                                 VIOLATION_MESSAGE_READONLY_MUTABLE_PATH, allowReadOnlyMutablePaths ? VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER
