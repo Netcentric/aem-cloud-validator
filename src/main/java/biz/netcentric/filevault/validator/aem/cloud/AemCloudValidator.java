@@ -38,9 +38,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class AemCloudValidator implements NodePathValidator, MetaInfPathValidator, DocumentViewXmlValidator, PropertiesValidator {
 
-    static final String VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER = "only allowed in author-specific packages";
-    static final String VIOLATION_MESSAGE_CONDITION_OVERALL = "not allowed";
-    static final String VIOLATION_MESSAGE_READONLY_MUTABLE_PATH = "Using mutable nodes in this repository location is %s  as it is not writable by the underlying service user on a publish instance. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%%2Fvar-in-content-package";
+    static final String VIOLATION_MESSAGE_READONLY_MUTABLE_PATH = "Using mutable nodes in this repository location is only allowed in author-specific packages as it is not writable by the underlying service user on a publish instance. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package";
     static final String VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE = "Using install hooks in mutable content packages leads to deployment failures as the underlying service user on the publish does not have the right to execute those.";
     static final String VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME = "All Oak index definition node names must end with '-custom-<integer>' but found name '%s'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#how-to-use";
     static final String VIOLATION_MESSAGE_LIBS_NODES = "Nodes below '/libs' may be overwritten by future product upgrades. Rather use '/apps'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing";
@@ -98,9 +96,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
                     // check if package itself is only used on author
                     if (!allowReadOnlyMutablePaths && !isContainedInAuthorOnlyPackage(containerValidationContext)) {
                         // only emit once per package
-                        messages.add(new ValidationMessage(defaultSeverity, String.format(
-                                VIOLATION_MESSAGE_READONLY_MUTABLE_PATH, allowReadOnlyMutablePaths ? VIOLATION_MESSAGE_CONDITION_AUTHOR_ONLY_CONTAINER
-                                        : VIOLATION_MESSAGE_CONDITION_OVERALL)));
+                        messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_READONLY_MUTABLE_PATH));
                         numVarNodeViolations++;
                     }
                 }
