@@ -1,20 +1,5 @@
 package biz.netcentric.filevault.validator.aem.cloud;
 
-/*-
- * #%L
- * AEM Cloud Validator
- * %%
- * Copyright (C) 2021 Netcentric - A Cognizant Digital Business
- * %%
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * #L%
- */
-
-import static biz.netcentric.filevault.validator.aem.cloud.AemCloudValidator.VIOLATION_MESSAGE_READONLY_MUTABLE_PATH;
-
 import java.nio.file.Paths;
 import java.util.Collection;
 
@@ -53,21 +38,18 @@ class AemCloudValidatorTest {
         Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/var/subnode/myfile"));
     }
 
-
     @Test
     void testMutablePaths(){
-        AemCloudValidator validator= new AemCloudValidator(false,false, PackageType.CONTENT,null, ValidationMessageSeverity.ERROR);
+        AemCloudValidator validator = new AemCloudValidator(false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         Collection<ValidationMessage> messages = validator.validate("/var/subnode");
         Assertions.assertFalse(messages.isEmpty());
     }
 
     @Test
     void testAllowReadOnlyMutablePaths(){
-
-        AemCloudValidator validator= new AemCloudValidator(true,false, PackageType.CONTENT,null, ValidationMessageSeverity.ERROR);
+        AemCloudValidator validator = new AemCloudValidator(true, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         Collection<ValidationMessage> messages = validator.validate("/var/subnode");
         Assertions.assertTrue(messages.isEmpty());
-
     }
 
 }
