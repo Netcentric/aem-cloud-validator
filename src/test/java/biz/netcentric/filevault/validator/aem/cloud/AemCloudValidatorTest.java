@@ -13,8 +13,14 @@ package biz.netcentric.filevault.validator.aem.cloud;
  * #L%
  */
 
-import java.nio.file.Paths;
+import static biz.netcentric.filevault.validator.aem.cloud.AemCloudValidator.VIOLATION_MESSAGE_READONLY_MUTABLE_PATH;
 
+import java.nio.file.Paths;
+import java.util.Collection;
+
+import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
+import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,4 +52,22 @@ class AemCloudValidatorTest {
         Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/var"));
         Assertions.assertFalse(AemCloudValidator.isPathWritableByDistributionJournalImporter("/var/subnode/myfile"));
     }
+
+
+    @Test
+    void testMutablePaths(){
+        AemCloudValidator validator= new AemCloudValidator(false,false, PackageType.CONTENT,null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = validator.validate("/var/subnode");
+        Assertions.assertFalse(messages.isEmpty());
+    }
+
+    @Test
+    void testAllowReadOnlyMutablePaths(){
+
+        AemCloudValidator validator= new AemCloudValidator(true,false, PackageType.CONTENT,null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = validator.validate("/var/subnode");
+        Assertions.assertTrue(messages.isEmpty());
+
+    }
+
 }

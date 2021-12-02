@@ -261,8 +261,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>install</goal>
-                            <goal>run</goal>
+
                         </goals>
                         <configuration>
                             <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>

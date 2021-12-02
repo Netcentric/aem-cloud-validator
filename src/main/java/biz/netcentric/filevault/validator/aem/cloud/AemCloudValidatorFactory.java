@@ -46,7 +46,7 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
         if (settings.getOptions().containsKey(OPTION_ALLOW_LIBS_NODE)) {
             allowLibsNode = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
         }
-        return new AemCloudValidator(allowReadOnlyMutablePaths, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
+            return new AemCloudValidator(allowReadOnlyMutablePaths, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override
