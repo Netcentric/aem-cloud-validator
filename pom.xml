@@ -51,7 +51,9 @@
 
     <properties>
         <maven.version>3.5.4</maven.version>
-        <java.target.version>8</java.target.version> <!-- used for compiler plugin and animal-sniffer, for compatibility reasons with Java 9 only the values 6,7,8 and 9 is allowed -->
+        <java.target.version>8</java.target.version> <!-- used for compiler plugin, javadoc plugin and animal-sniffer, for compatibility reasons with Java 9 only the values 6,7,8 and 9 is allowed -->
+        <maven.compiler.source>1.${java.target.version}</maven.compiler.source>
+        <maven.compiler.target>1.${java.target.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <arguments /> <!-- additional arguments for the forked Maven run during releases -->
     </properties>
@@ -231,14 +233,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.${java.target.version}</source>
-                    <target>1.${java.target.version}</target>
-                </configuration>
             </plugin>
             <!-- check with animal sniffer (http://www.mojohaus.org/animal-sniffer/), should only be used in JDKs prior version 9 -->
             <plugin>
