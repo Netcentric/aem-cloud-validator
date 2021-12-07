@@ -29,8 +29,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest] # Windows doe not yet work
-        jdk: [8, 11, 17]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        jdk: [11, 17]
         include:
           # lengthy build steps should only be performed on linux with Java 11 (SonarQube analysis, deployment)
           - os: ubuntu-latest
