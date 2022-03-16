@@ -74,7 +74,6 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
 <plugin>
   <groupId>org.apache.jackrabbit</groupId>
   <artifactId>filevault-package-maven-plugin</artifactId>
-  <version>1.1.6</version>
   <configuration>
     <validatorsSettings>
       <netcentric-aem-cloud>
@@ -88,7 +87,7 @@ You can use this validator with the [FileVault Package Maven Plugin][3] in versi
     <dependency>
       <groupId>biz.netcentric.filevault.validator</groupId>
       <artifactId>aem-cloud-validator</artifactId>
-      <version>1.2.0</version>
+      <version><latestversion></version>
     </dependency>
   </dependencies>
 </plugin>
