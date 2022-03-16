@@ -8,7 +8,7 @@
 
     <name>AEM as a Cloud Service Validator</name>
     <description>FileVault validator which verifies that a package complies with the AEM as a Cloud Service deployment restrictions outlined at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html.</description>
-    <url>https://github.com/Netcentric/aem-aacs-validator</url>
+    <url>https://github.com/Netcentric/aem-cloud-validator</url>
     <inceptionYear>2021</inceptionYear>
     <organization>
         <name>Netcentric - A Cognizant Digital Business</name>
