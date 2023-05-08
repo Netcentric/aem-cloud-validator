@@ -17,8 +17,8 @@ The following options are supported apart from the default settings mentioned in
 Option | Mandatory | Description | Default Value | Since Version
 --- | --- | --- | --- | ---
 `allowReadOnlyMutablePaths` (or `allowVarNodeOutsideContainer` deprecated) | no | `true` means read-only paths (i.e. paths to which the service session used for mutable package installation on publish does not have write permission) should be allowed. Otherwise those will only be allowed in author-only packages included in a container package. | `false` | 1.2.0 
-`allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.*                                                                                                                     | `false` | 1.2.0
-`allowHooksInMutableContent` | no | `true` means that JCR Install Hooks are allowed in content packages. *Only set this to `true` when building packages for local AEM SDK development, where install hooks are supported for mutable content.*                                                             | `false` | 1.3.0
+`allowLibsNode` | no | `true` means that `libs` nodes are allowed in content packages. *Only set this to `true` when building packages which are part of the AEM product.* | `false` | 1.2.0
+`allowHooksInMutableContent` | no | `true` means that JCR Install Hooks are allowed in content packages. *Only set this to `true` when building packages for local AEM SDK development or when explicitly allowed via OSGi configuration (details below in check description for install hooks).* | `false` | 1.3.0
 
 # Included Checks
 
@@ -48,9 +48,19 @@ Changes below `/libs` may be overwritten by AEM product upgrades (applied regula
 
 ## Prevent using install hooks in mutable content packages
 
-The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. The code for that can be found in [ContentPackageExtractor](https://github.com/apache/sling-org-apache-sling-distribution-journal/blob/ba075183c374a09b86ca6fa4755a05b26e74866d/src/main/java/org/apache/sling/distribution/journal/bookkeeper/ContentPackageExtractor.java#L93). Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). As AEMaaCS currently (version 2021.1.4738.20210107T143101Z) still ships with the old FileVault 3.4.0, you cannot circumvent this limitation with OSGi configuration (only possible since FileVault 3.4.6). Adobe is working on a fix (tracked in ticket #SKYOPS-13098)
+The usage of [install hooks](http://jackrabbit.apache.org/filevault/installhooks.html) is not allowed to the system user which is installing the package on the AEMaaCS publish instances (named `sling-distribution-importer`) and leads to a `PackageException`. The code for that can be found in [ContentPackageExtractor](https://github.com/apache/sling-org-apache-sling-distribution-journal/blob/ba075183c374a09b86ca6fa4755a05b26e74866d/src/main/java/org/apache/sling/distribution/journal/bookkeeper/ContentPackageExtractor.java#L93). Subsequently the deployment will fail as the exception on publish will block the replication queue on author. Further details at [JCRVLT-427](https://issues.apache.org/jira/browse/JCRVLT-427). Although AEMaaCS since version 2023.1.10675 ships with FileVault > 3.5.0 you need to add explicit OSGi configuration to lift this limitation. Adobe has not yet allowed this by default (tracked in ticket #SKYOPS-13098). In order to do that just include the following `org.apache.jackrabbit.vault.packaging.impl.PackagingImpl.cfg.json` file as OSGi configuration in your container package:
+
+```
+{
+  "authIdsForHookExecution":[
+    "sling-distribution-importer"
+  ]
+}
+```
 
 *Usage of install hooks in immutable content packages is supported in Cloud Manager Build since end of May 2021 due to the update of the converter fixing [SLING-10205](https://issues.apache.org/jira/browse/SLING-10205)*.
+
+Install hooks have no limitations when being used with the AEMaaCS SDK Quickstart Jar.
 
 ## Prevent using mutable content in "mixed" content packages
 
