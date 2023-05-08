@@ -64,6 +64,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     private boolean hasMutableNodes;
     private final boolean allowReadOnlyMutablePaths;
     private final boolean allowLibsNode;
+    private final boolean allowHooksInMutableContent;
     private boolean hasInstallHooks;
     private boolean hasImmutableNodes;
 
@@ -72,11 +73,12 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     private int numLibNodeViolations = 0;
     private int numMutableNodeViolations = 0;
 
-    public AemCloudValidator(boolean allowReadOnlyMutablePaths, boolean allowLibsNode, @Nullable PackageType packageType,
-            @Nullable ValidationContext containerValidationContext, @NotNull ValidationMessageSeverity defaultSeverity) {
+    public AemCloudValidator(boolean allowReadOnlyMutablePaths, boolean allowLibsNode, boolean allowHooksInMutableContent, @Nullable PackageType packageType,
+                             @Nullable ValidationContext containerValidationContext, @NotNull ValidationMessageSeverity defaultSeverity) {
         super();
         this.allowReadOnlyMutablePaths = allowReadOnlyMutablePaths;
         this.allowLibsNode = allowLibsNode;
+        this.allowHooksInMutableContent = allowHooksInMutableContent;
         this.packageType = packageType;
         this.containerValidationContext = containerValidationContext;
         this.defaultSeverity = defaultSeverity;
@@ -165,7 +167,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     @Override
     public @Nullable Collection<ValidationMessage> done() {
         Collection<ValidationMessage> messages = new ArrayList<>();
-        if (hasInstallHooks && hasMutableNodes) {
+        if (hasInstallHooks && hasMutableNodes && !allowHooksInMutableContent) {
             messages.add(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
         }
         // for non-set package types usually the package type is determined by cp2fm, but it will be MIXED in case both mutable and immutable nodes are contained
@@ -181,7 +183,10 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
         if (filePath.startsWith(INSTALL_HOOK_PATH) && filePath.toString().endsWith(".jar")) {
             // is it mutable content package?
             if (PackageType.CONTENT.equals(packageType)) {
-                return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
+                hasInstallHooks = true;
+                if (!allowHooksInMutableContent) {
+                    return Collections.singleton(new ValidationMessage(defaultSeverity, VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE));
+                }
             } else if (packageType == null) {
                 // defer checking until one is sure that the package has mutable content
                 hasInstallHooks = true;
