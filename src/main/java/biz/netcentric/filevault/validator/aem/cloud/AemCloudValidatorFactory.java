@@ -29,6 +29,7 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
     private static final String OPTION_ALLOW_VAR_NODE_OUTSIDE_CONTAINERS = "allowVarNodeOutsideContainer";
     private static final String OPTION_ALLOW_READONLY_MUTABLE_PATHS = "allowReadOnlyMutablePaths";
     private static final String OPTION_ALLOW_LIBS_NODE = "allowLibsNode";
+    private static final String OPTION_ALLOW_HOOKS_IN_MUTABLE_CONTENT = "allowHooksInMutableContent";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AemCloudValidatorFactory.class);
 
@@ -43,10 +44,14 @@ public class AemCloudValidatorFactory implements ValidatorFactory {
             LOGGER.warn("Using deprecated option 'allowVarNodeOutsideContainer', please use 'allowReadOnlyMutablePaths' instead");
         }
         boolean allowLibsNode = false;
+        boolean allowHooksInMutableContent = false;
         if (settings.getOptions().containsKey(OPTION_ALLOW_LIBS_NODE)) {
             allowLibsNode = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_LIBS_NODE));
         }
-            return new AemCloudValidator(allowReadOnlyMutablePaths, allowLibsNode, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
+        if (settings.getOptions().containsKey(OPTION_ALLOW_HOOKS_IN_MUTABLE_CONTENT)) {
+            allowHooksInMutableContent = Boolean.parseBoolean(settings.getOptions().get(OPTION_ALLOW_HOOKS_IN_MUTABLE_CONTENT));
+        }
+        return new AemCloudValidator(allowReadOnlyMutablePaths, allowLibsNode, allowHooksInMutableContent, context.getProperties().getPackageType(), context.getContainerValidationContext(), settings.getDefaultSeverity());
     }
 
     @Override

@@ -14,13 +14,17 @@ package biz.netcentric.filevault.validator.aem.cloud;
  */
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static biz.netcentric.filevault.validator.aem.cloud.AemCloudValidator.VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE;
 
 class AemCloudValidatorTest {
 
@@ -53,15 +57,30 @@ class AemCloudValidatorTest {
 
     @Test
     void testMutablePaths(){
-        AemCloudValidator validator = new AemCloudValidator(false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        AemCloudValidator validator = new AemCloudValidator(false, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         Collection<ValidationMessage> messages = validator.validate("/var/subnode");
         Assertions.assertFalse(messages.isEmpty());
     }
 
     @Test
     void testAllowReadOnlyMutablePaths(){
-        AemCloudValidator validator = new AemCloudValidator(true, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         Collection<ValidationMessage> messages = validator.validate("/var/subnode");
+        Assertions.assertTrue(messages.isEmpty());
+    }
+
+    @Test
+    void testAllowHooksInMutableContent() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        Optional.ofNullable(validator.validateMetaInfPath(Paths.get("vault/hooks/install-hook.jar"))).ifPresent(messages::addAll);
+        Optional.ofNullable(validator.done()).ifPresent(messages::addAll);
+        Assertions.assertTrue(messages.stream().anyMatch(message -> message.getMessage().equals(VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE)));
+
+        validator = new AemCloudValidator(true, false, true, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validateMetaInfPath(Paths.get("vault/hooks/install-hook.jar"))).ifPresent(messages::addAll);
+        Optional.ofNullable(validator.done()).ifPresent(messages::addAll);
         Assertions.assertTrue(messages.isEmpty());
     }
 
