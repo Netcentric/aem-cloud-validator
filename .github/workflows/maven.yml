@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # always act on the modified source code (even for event pull_request_target)
         # is considered potentially unsafe (https://securitylab.github.com/research/github-actions-preventing-pwn-requests/) but actions are only executed after approval from committers
         with:
@@ -53,7 +53,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           cache: 'maven'
           distribution: 'temurin'
