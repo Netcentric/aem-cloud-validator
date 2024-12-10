@@ -22,12 +22,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.util.Text;
 import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
-import org.apache.jackrabbit.vault.util.DocViewNode;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.NodePathValidator;
 import org.apache.jackrabbit.vault.validation.spi.PropertiesValidator;
 import org.apache.jackrabbit.vault.validation.spi.ValidationContext;
@@ -40,7 +44,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
 
     static final String VIOLATION_MESSAGE_READONLY_MUTABLE_PATH = "Using mutable nodes in this repository location is only allowed in author-specific packages as it is not writable by the underlying service user on a publish instance. Consider to use repoinit scripts instead or move that content to another location. Further details at https://experienceleague.adobe.com/docs/experience-manager-learn/cloud-service/debugging/debugging-aem-as-a-cloud-service/build-and-deployment.html?lang=en#including-%2Fvar-in-content-package";
     static final String VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE = "Using install hooks in mutable content packages leads to deployment failures as the underlying service user on the publish does not have the right to execute those.";
-    static final String VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME = "All Oak index definition node names must end with '-custom-<integer>' but found name '%s'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#how-to-use";
+    static final String VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME = "All Oak index definition node names must follow scheme '<indexName>-<productVersion>-custom-<customVersion>' (for a customized OOTB index) or '<prefix>.<indexName>-<productVersion>-custom-<customVersion>' (for a fully customized index) but found name '%s'. Further details at https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#preparing-the-new-index-definition";
     static final String VIOLATION_MESSAGE_LIBS_NODES = "Nodes below '/libs' may be overwritten by future product upgrades. Rather use '/apps'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE = "Mutable nodes in mixed package types are not installed!";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_AND_IMMUTABLE_NODES_IN_SAME_PACKAGE = "Mutable and immutable nodes must not be mixed in the same package. You must separate those into two packages and give them both a dedicated package type!";
@@ -48,7 +52,11 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
 
     // this path is relative to META-INF
     private static final Path INSTALL_HOOK_PATH = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
-    private static final Pattern INDEX_DEFINITION_NAME_PATTERN = Pattern.compile(".*-custom-\\d++");
+    /**
+     * The allowed patterns are defined in https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#preparing-the-new-index-definition
+     */
+    private static final Pattern INDEX_DEFINITION_NAME_PATTERN = Pattern.compile(".*-\\d++-custom-\\d++");
+    
     private static final Collection<String> IMMUTABLE_PATH_PREFIXES = Arrays.asList("/apps", "/libs", "/oak:index");
     private static final Collection<String> WRITABLE_PATHS_BY_DISTRIBUTION_IMPORTER = Arrays.asList(
             "/content",     // access provided by system user content-writer-service and sling-distribution-importer
@@ -69,6 +77,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     private boolean hasImmutableNodes;
 
     private static final int MAX_NUM_VIOLATIONS_PER_TYPE = 5;
+    private static final Name PN_TYPE = NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type");
     private int numVarNodeViolations = 0;
     private int numLibNodeViolations = 0;
     private int numMutableNodeViolations = 0;
@@ -196,19 +205,19 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     }
 
     @Override
-    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode node, @NotNull String nodePath,
-            @NotNull Path filePath, boolean isRoot) {
-        if ("oak:QueryIndexDefinition".equals(node.primary)) {
+    public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
+        if ("oak:QueryIndexDefinition".equals(node.getPrimaryType().orElse(""))) {
             Collection<ValidationMessage> messages = new ArrayList<>();
-            String indexType = node.getValue("{}type");
+            String indexType = node.getPropertyValue(PN_TYPE).orElse("");
             if (!"lucene".equals(indexType)) {
                 messages.add(new ValidationMessage(defaultSeverity,
                         String.format(VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION, indexType)));
             }
-            // check node name
-            if (!INDEX_DEFINITION_NAME_PATTERN.matcher(node.name).matches()) {
+            // check node name (jcr qualified name as contained in the path)
+            String qualifiedName = Text.getName(nodeContext.getNodePath());
+            if (!INDEX_DEFINITION_NAME_PATTERN.matcher(qualifiedName).matches()) {
                 messages.add(new ValidationMessage(defaultSeverity,
-                        String.format(VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, node.name)));
+                        String.format(VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, qualifiedName)));
             }
             return messages;
         }
