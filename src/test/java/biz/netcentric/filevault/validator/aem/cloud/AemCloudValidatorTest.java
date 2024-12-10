@@ -15,16 +15,25 @@ package biz.netcentric.filevault.validator.aem.cloud;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
+import org.apache.jackrabbit.spi.Name;
+import org.apache.jackrabbit.spi.commons.name.NameConstants;
+import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
 import org.apache.jackrabbit.vault.packaging.PackageType;
+import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
+import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static biz.netcentric.filevault.validator.aem.cloud.AemCloudValidator.VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AemCloudValidatorTest {
 
@@ -75,7 +84,7 @@ class AemCloudValidatorTest {
         Collection<ValidationMessage> messages = new ArrayList<>();
         Optional.ofNullable(validator.validateMetaInfPath(Paths.get("vault/hooks/install-hook.jar"))).ifPresent(messages::addAll);
         Optional.ofNullable(validator.done()).ifPresent(messages::addAll);
-        Assertions.assertTrue(messages.stream().anyMatch(message -> message.getMessage().equals(VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE)));
+        Assertions.assertTrue(messages.stream().anyMatch(message -> message.getMessage().equals(AemCloudValidator.VIOLATION_MESSAGE_INSTALL_HOOK_IN_MUTABLE_PACKAGE)));
 
         validator = new AemCloudValidator(true, false, true, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         messages = new ArrayList<>();
@@ -84,4 +93,49 @@ class AemCloudValidatorTest {
         Assertions.assertTrue(messages.isEmpty());
     }
 
+    @Test
+    void testValidIndexDefinitions() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        List<DocViewProperty2> properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"));
+        // valid lucene index definition
+        NodeContext context = new NodeContextImpl("/oak:index/prefix.myindex-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        Assertions.assertTrue(messages.isEmpty());
+        context = new NodeContextImpl("/oak:index/productindex-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        Assertions.assertTrue(messages.isEmpty());
+    }
+
+    @Test
+    void testInvalidLuceneIndexDefinitions() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        List<DocViewProperty2> properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"));
+        NodeContext context = new NodeContextImpl("/oak:index/myindex", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        assertEquals(1, messages.size());
+        assertEquals(String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, "myindex"), messages.iterator().next().getMessage());
+    }
+
+    @Test
+    void testInvalidPropertyIndexDefinition() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        List<DocViewProperty2> properties =  Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "property"));
+        // invalid property index definition
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        NodeContext context = new NodeContextImpl("/oak:index/prefix.myindex-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        assertEquals(1, messages.size());
+        assertEquals(String.format(AemCloudValidator.VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION, "property"), messages.iterator().next().getMessage());
+    }
 }
