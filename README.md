@@ -73,13 +73,13 @@ Currently only Oak index definitions of type `lucene` are supported in AEMaaCS. 
 
 ## Follow naming policy for Oak index definition node names
 
-There is a mandatory naming policy for Oak index definition node names which enforces them to end with `-custom-<version-as-integer>`. The format is used in [`IndexName`](https://github.com/apache/jackrabbit-oak/blob/08c7b20e0676739d9c445b5249c3f71004b6b894/oak-search/src/main/java/org/apache/jackrabbit/oak/plugins/index/search/spi/query/IndexName.java#L36) and allows for upgrades of existing index definitions in blue/green deployments.
+There is a mandatory naming policy for Oak index definition node names which enforces them to either comply with pattern `<indexName>-<productVersion>-custom-<customVersion>` (customized OOTB index) or `<prefix>.<indexName>-<productVersion>-custom-<customVersion>` (fully customized index). The format is used in [`IndexName`](https://github.com/apache/jackrabbit-oak/blob/92e9020246a5099d22cd7929a67a03efb49615d3/oak-core/src/main/java/org/apache/jackrabbit/oak/plugins/index/IndexName.java#L35-L44) and allows for upgrades of existing index definitions in blue/green deployments.
 
-Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
+Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#preparing-the-new-index-definition>.
 
 # Usage with Maven
 
-You can use this validator with the [FileVault Package Maven Plugin][3] in version 1.1.0 or higher like this
+You can use this validator with the [FileVault Package Maven Plugin][3] in version 1.4.0 or higher like this
 
 ```
 <plugin>
