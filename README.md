@@ -67,9 +67,9 @@ Install hooks have no limitations when being used with the AEMaaCS SDK Quickstar
 Content packages of type `mixed` are allowed to have both mutable and immutable nodes. AEMaaCS will only ever install the immutable part of it. The mutable part won't be installed as that cannot be successful (due to missing write access at the time of installation).
 Further details at <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/deploying/overview.html?lang=en#deploying-content-packages-via-cloud-manager-and-package-manager>.
 
-## Enforce Oak index definitions of type `lucene`
+## Enforce Oak index definitions of type `lucene` with `compatVersion` set to 2
 
-Currently only Oak index definitions of type `lucene` are supported in AEMaaCS. Further details in <https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service>.
+Currently only Oak index definitions of type `lucene` with property `compatVersion` set to the (Long) value `2` are supported in AEMaaCS. Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#current-limitations>.
 
 ## Follow naming policy for Oak index definition node names
 
