@@ -1,5 +1,7 @@
 package biz.netcentric.filevault.validator.aem.cloud;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /*-
  * #%L
  * AEM Cloud Validator
@@ -20,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import javax.jcr.PropertyType;
+
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
@@ -30,10 +34,10 @@ import org.apache.jackrabbit.vault.validation.spi.NodeContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessage;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.util.NodeContextImpl;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AemCloudValidatorTest {
 
@@ -99,12 +103,13 @@ class AemCloudValidatorTest {
         Collection<ValidationMessage> messages = new ArrayList<>();
         List<DocViewProperty2> properties = Arrays.asList(
                 new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
-                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"));
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "compatVersion"), "2", PropertyType.LONG));
         // valid lucene index definition
         NodeContext context = new NodeContextImpl("/oak:index/prefix.myindex-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
         DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
         Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
-        Assertions.assertTrue(messages.isEmpty());
+        MatcherAssert.assertThat(messages, Matchers.empty());
         context = new NodeContextImpl("/oak:index/productindex-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
         Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
         Assertions.assertTrue(messages.isEmpty());
@@ -117,11 +122,14 @@ class AemCloudValidatorTest {
         List<DocViewProperty2> properties = Arrays.asList(
                 new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
                 new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"));
+        // invalid name and also compatVersion not set
         NodeContext context = new NodeContextImpl("/oak:index/myindex", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
         DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
         Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
-        assertEquals(1, messages.size());
-        assertEquals(String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, "myindex"), messages.iterator().next().getMessage());
+        MatcherAssert.assertThat(messages, Matchers.containsInAnyOrder(
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, "myindex")),
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_COMPAT_VERSION_IN_INDEX_DEFINITION, "not set"))
+        ));
     }
 
     @Test

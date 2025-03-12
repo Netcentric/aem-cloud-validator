@@ -20,7 +20,10 @@ import java.util.Arrays;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.regex.Pattern;
+
+import javax.jcr.PropertyType;
 
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
@@ -29,6 +32,7 @@ import org.apache.jackrabbit.vault.packaging.PackageProperties;
 import org.apache.jackrabbit.vault.packaging.PackageType;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.util.DocViewNode2;
+import org.apache.jackrabbit.vault.util.DocViewProperty2;
 import org.apache.jackrabbit.vault.validation.spi.DocumentViewXmlValidator;
 import org.apache.jackrabbit.vault.validation.spi.MetaInfPathValidator;
 import org.apache.jackrabbit.vault.validation.spi.NodeContext;
@@ -48,8 +52,9 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     static final String VIOLATION_MESSAGE_LIBS_NODES = "Nodes below '/libs' may be overwritten by future product upgrades. Rather use '/apps'. Further details at https://experienceleague.adobe.com/docs/experience-manager-cloud-service/implementing/developing/full-stack/overlays.html?lang=en#developing";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_IN_MIXED_PACKAGE = "Mutable nodes in mixed package types are not installed!";
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_AND_IMMUTABLE_NODES_IN_SAME_PACKAGE = "Mutable and immutable nodes must not be mixed in the same package. You must separate those into two packages and give them both a dedicated package type!";
-    static final String VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION = "Only oak:QueryIndexDefinitions of type='lucene' are supported in AEMaaCS but found type='%s'. Compare with https://experienceleague.adobe.com/docs/experience-manager-cloud-service/operations/indexing.html?lang=en#changes-in-aem-as-a-cloud-service";
-
+    static final String VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION = "Only oak:QueryIndexDefinitions of type='lucene' are supported in AEMaaCS but found type='%s'. Compare with https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#current-limitations";
+    static final String VIOLATION_MESSAGE_INVALID_COMPAT_VERSION_IN_INDEX_DEFINITION = "The compatVersion property of an oak:QueryIndexDefinition must be set to the Long value '2' but found '%s'. Compare with https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#current-limitations";
+    
     // this path is relative to META-INF
     private static final Path INSTALL_HOOK_PATH = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     /**
@@ -78,6 +83,7 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
 
     private static final int MAX_NUM_VIOLATIONS_PER_TYPE = 5;
     private static final Name PN_TYPE = NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type");
+    private static final Name PN_COMPAT_VERSION = NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "compatVersion");
     private int numVarNodeViolations = 0;
     private int numLibNodeViolations = 0;
     private int numMutableNodeViolations = 0;
@@ -212,6 +218,12 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
             if (!"lucene".equals(indexType)) {
                 messages.add(new ValidationMessage(defaultSeverity,
                         String.format(VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION, indexType)));
+            } else {
+                Optional<DocViewProperty2> compatVersionProperty = node.getProperty(PN_COMPAT_VERSION);
+                if (!compatVersionProperty.isPresent() || compatVersionProperty.get().getType() != PropertyType.LONG || !compatVersionProperty.get().getStringValue().orElse("").equals("2")) {
+                    messages.add(new ValidationMessage(defaultSeverity,
+                            String.format(VIOLATION_MESSAGE_INVALID_COMPAT_VERSION_IN_INDEX_DEFINITION, compatVersionProperty.map(p -> p.formatValue()).orElse("not set"))));
+                }
             }
             // check node name (jcr qualified name as contained in the path)
             String qualifiedName = Text.getName(nodeContext.getNodePath());
