@@ -51,8 +51,6 @@ jobs:
           if [ "${{ matrix.isMainBuildEnv }}" = "true" ]; then
             echo "MVN_ADDITIONAL_OPTS=-Dsonar.projectKey=Netcentric_aem-cloud-validator -Dsonar.organization=netcentric -Dsonar.host.url=https://sonarcloud.io -Pjacoco-report -Dsonar.scanner.skipJreProvisioning=true" >> $GITHUB_ENV
             if [ "${{github.ref}}" = "refs/heads/main" ] && [ "${{github.event_name}}" = "push" ]; then
-              echo "MAVEN_USERNAME=${{ secrets.SONATYPE_CENTRAL_TOKEN_USER }}" >> $GITHUB_ENV
-              echo "MAVEN_PASSWORD=${{ secrets.SONATYPE_CENTRAL_TOKEN_PASSWORD }}" >> $GITHUB_ENV
               echo "MVN_GOAL=clean deploy org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar" >> $GITHUB_ENV
               echo "STEP_NAME_SUFFIX=(Deploys to Central Portal)" >> $GITHUB_ENV
             else
@@ -66,6 +64,8 @@ jobs:
         env: 
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.SONATYPE_CENTRAL_TOKEN_USER }}
+          MAVEN_PASSWORD: ${{ secrets.SONATYPE_CENTRAL_TOKEN_PASSWORD }}
         run: mvn -e -B -V ${{ env.MVN_GOAL }} ${{ env.MVN_ADDITIONAL_OPTS }}
 
       - name: Upload Test Results
