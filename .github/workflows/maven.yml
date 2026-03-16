@@ -67,7 +67,7 @@ jobs:
               echo "MAVEN_USERNAME=${{ secrets.SONATYPE_CENTRAL_TOKEN_USER }}" >> $GITHUB_ENV
               echo "MAVEN_PASSWORD=${{ secrets.SONATYPE_CENTRAL_TOKEN_PASSWORD }}" >> $GITHUB_ENV
               echo "MVN_GOAL=clean deploy org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar" >> $GITHUB_ENV
-              echo "STEP_NAME_SUFFIX=(Deploys to OSSRH)" >> $GITHUB_ENV
+              echo "STEP_NAME_SUFFIX=(Deploys to Central Portal)" >> $GITHUB_ENV
             else
               echo "MVN_GOAL=clean verify" >> $GITHUB_ENV
             fi
