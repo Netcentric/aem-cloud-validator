@@ -133,6 +133,76 @@ class AemCloudValidatorTest {
     }
 
     @Test
+    void testValidDiffIndexDefinitions() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        List<DocViewProperty2> properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "disabled"));
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        // diff.index control node, no version-suffix name, no compatVersion
+        NodeContext context = new NodeContextImpl("/oak:index/diff.index", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.empty());
+        // diff.index.optimizer control node (Index Optimizer)
+        context = new NodeContextImpl("/oak:index/diff.index.optimizer", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.empty());
+    }
+
+    @Test
+    void testInvalidDiffIndexType() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        List<DocViewProperty2> properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"));
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        NodeContext context = new NodeContextImpl("/oak:index/diff.index", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.contains(
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_DIFF_INDEX_TYPE, "lucene"))
+        ));
+        // same for the Index Optimizer control node
+        context = new NodeContextImpl("/oak:index/diff.index.optimizer", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.contains(
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_DIFF_INDEX_TYPE, "lucene"))
+        ));
+    }
+
+    @Test
+    void testDiffIndexLookalikeNamesNotExempted() {
+        AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
+        List<DocViewProperty2> properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "oak:QueryIndexDefinition"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "compatVersion"), "2", PropertyType.LONG));
+        DocViewNode2 node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        // a real, correctly named custom index whose name happens to start with "diff." must not be exempted
+        NodeContext context = new NodeContextImpl("/oak:index/diff.indexer-1-custom-1", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        Collection<ValidationMessage> messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.empty());
+        // a lucene index misnamed to look like an Index Optimizer diff must still go through the normal naming/type/compatVersion checks
+        context = new NodeContextImpl("/oak:index/diff.index.custom-index", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.contains(
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, "diff.index.custom-index"))
+        ));
+        // the control node name below a different parent path must not be exempted either
+        context = new NodeContextImpl("/apps/foo/diff.index", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.contains(
+                new ValidationMessage(ValidationMessageSeverity.ERROR, String.format(AemCloudValidator.VIOLATION_MESSAGE_INVALID_INDEX_DEFINITION_NODE_NAME, "diff.index"))
+        ));
+    }
+
+    @Test
     void testInvalidPropertyIndexDefinition() {
         AemCloudValidator validator = new AemCloudValidator(true, false, false, PackageType.CONTENT, null, ValidationMessageSeverity.ERROR);
         Collection<ValidationMessage> messages = new ArrayList<>();
