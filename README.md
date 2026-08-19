@@ -77,6 +77,8 @@ There is a mandatory naming policy for Oak index definition node names which enf
 
 Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#preparing-the-new-index-definition>.
 
+## Enforce diff.index control nodes of type `disabled`
+
 The control nodes `/oak:index/diff.index` and `/oak:index/diff.index.optimizer` used by Oak's simplified index management (diff indexes) are exempt from the naming, `type=lucene` and `compatVersion` rules above, but must have `type` set to `disabled`. Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#simplified-index-management-using-the-diff-index>.
 
 # Usage with Maven
