@@ -54,14 +54,20 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     static final String VIOLATION_MESSAGE_MUTABLE_NODES_AND_IMMUTABLE_NODES_IN_SAME_PACKAGE = "Mutable and immutable nodes must not be mixed in the same package. You must separate those into two packages and give them both a dedicated package type!";
     static final String VIOLATION_MESSAGE_NON_LUCENE_TYPE_INDEX_DEFINITION = "Only oak:QueryIndexDefinitions of type='lucene' are supported in AEMaaCS but found type='%s'. Compare with https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#current-limitations";
     static final String VIOLATION_MESSAGE_INVALID_COMPAT_VERSION_IN_INDEX_DEFINITION = "The compatVersion property of an oak:QueryIndexDefinition must be set to the Long value '2' but found '%s'. Compare with https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#current-limitations";
-    
+    static final String VIOLATION_MESSAGE_INVALID_DIFF_INDEX_TYPE = "The diff-index control node used for Oak simplified index management must have type='disabled' but found type='%s'. Further details at https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#simplified-index-management-using-the-diff-index";
+
     // this path is relative to META-INF
     private static final Path INSTALL_HOOK_PATH = Paths.get(Constants.VAULT_DIR, Constants.HOOKS_DIR);
     /**
      * The allowed patterns are defined in https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#preparing-the-new-index-definition
      */
     private static final Pattern INDEX_DEFINITION_NAME_PATTERN = Pattern.compile(".*-\\d++-custom-\\d++");
-    
+    /**
+     * Paths of the diff-index control nodes used by Oak simplified index management (OAK-12010).
+     * They are not index definitions themselves and don't follow the naming/type/compatVersion rules of regular index definitions.
+     */
+    private static final Collection<String> DIFF_INDEX_CONTROL_NODE_PATHS = Arrays.asList("/oak:index/diff.index", "/oak:index/diff.index.optimizer");
+
     private static final Collection<String> IMMUTABLE_PATH_PREFIXES = Arrays.asList("/apps", "/libs", "/oak:index");
     private static final Collection<String> WRITABLE_PATHS_BY_DISTRIBUTION_IMPORTER = Arrays.asList(
             "/content",     // access provided by system user content-writer-service and sling-distribution-importer
@@ -213,6 +219,14 @@ public class AemCloudValidator implements NodePathValidator, MetaInfPathValidato
     @Override
     public @Nullable Collection<ValidationMessage> validate(@NotNull DocViewNode2 node, @NotNull NodeContext nodeContext, boolean isRoot) {
         if ("oak:QueryIndexDefinition".equals(node.getPrimaryType().orElse(""))) {
+            if (DIFF_INDEX_CONTROL_NODE_PATHS.contains(nodeContext.getNodePath())) {
+                String diffIndexType = node.getPropertyValue(PN_TYPE).orElse("");
+                if (!"disabled".equals(diffIndexType)) {
+                    return Collections.singleton(new ValidationMessage(defaultSeverity,
+                            String.format(VIOLATION_MESSAGE_INVALID_DIFF_INDEX_TYPE, diffIndexType)));
+                }
+                return null;
+            }
             Collection<ValidationMessage> messages = new ArrayList<>();
             String indexType = node.getPropertyValue(PN_TYPE).orElse("");
             if (!"lucene".equals(indexType)) {
