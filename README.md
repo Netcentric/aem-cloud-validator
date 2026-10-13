@@ -79,7 +79,9 @@ Further details in <https://experienceleague.adobe.com/en/docs/experience-manage
 
 ## Enforce diff.index control nodes of type `disabled`
 
-The control nodes `/oak:index/diff.index` and `/oak:index/diff.index.optimizer` used by Oak's simplified index management (diff indexes) are exempt from the naming, `type=lucene` and `compatVersion` rules above, but must have `type` set to `disabled`. Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#simplified-index-management-using-the-diff-index>.
+The control nodes `/oak:index/diff.index` and `/oak:index/diff.index.optimizer` used by Oak's simplified index management (diff indexes) are exempt from the naming, `type=lucene` and `compatVersion` rules above, but must have `type` set to `disabled` when being of type `oak:QueryIndexDefinition`. Further details in <https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/operations/indexing#simplified-index-management-using-the-diff-index>.
+
+Cloud Manager and the local AEM SDK/RDE require different wrappers for `/oak:index/diff.index`, which are usually switched via Maven profiles: the wrapper for Cloud Manager is of type `nt:unstructured` (with `type="lucene"` and both `includedPaths` and `queryPaths` set to a non-existing path) and not checked by this validator, while the wrapper for the local AEM SDK and RDE is an `oak:QueryIndexDefinition` with `type="disabled"`. Further details in <https://experienceleague.adobe.com/en/docs/experience-cloud-kcs/kbarticles/ka-41939>.
 
 # Usage with Maven
 

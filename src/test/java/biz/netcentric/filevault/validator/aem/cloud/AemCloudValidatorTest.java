@@ -149,6 +149,18 @@ class AemCloudValidatorTest {
         messages = new ArrayList<>();
         Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
         MatcherAssert.assertThat(messages, Matchers.empty());
+        // diff.index wrapper required by Cloud Manager (https://experienceleague.adobe.com/en/docs/experience-cloud-kcs/kbarticles/ka-41939)
+        properties = Arrays.asList(
+                new DocViewProperty2(NameConstants.JCR_PRIMARYTYPE, "nt:unstructured"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "type"), "lucene"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "includedPaths"), "/same"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "queryPaths"), "/same"),
+                new DocViewProperty2(NameFactoryImpl.getInstance().create(Name.NS_DEFAULT_URI, "async"), "async"));
+        node = new DocViewNode2(NameConstants.JCR_ROOT, properties);
+        context = new NodeContextImpl("/oak:index/diff.index", Paths.get("_oak_index/test"),Paths.get("./jcr_root"));
+        messages = new ArrayList<>();
+        Optional.ofNullable(validator.validate(node, context, true)).ifPresent(messages::addAll);
+        MatcherAssert.assertThat(messages, Matchers.empty());
     }
 
     @Test
